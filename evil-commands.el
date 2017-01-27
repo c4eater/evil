@@ -4732,6 +4732,7 @@ Restore the disabled repeat hooks on insert-state exit."
              (forward-char))
            (unless (eq 'replace evil-state)
              (evil-change-state ',evil-state))
+           (if (eq this-command 'evil-paste-before) (evil-forward-char))
            (when (eq 'insert evil-state)
              (remove-hook 'pre-command-hook 'evil-repeat-pre-hook)
              (remove-hook 'post-command-hook 'evil-repeat-post-hook)
