@@ -1539,12 +1539,10 @@ backwards."
 (defun forward-evil-word (&optional count)
   "Move forward COUNT words.
 Moves point COUNT words forward or (- COUNT) words backward if
-COUNT is negative.  Point is placed after the end of the word (if
-forward) or at the first character of the word (if backward).  A
-word is a sequence of word characters matching
-\[[:word:]] (recognized by `forward-word'), a sequence of
-non-whitespace non-word characters '[^[:word:]\\n\\r\\t\\f ]', or
-an empty line matching ^$."
+COUNT is negative. Point is placed after the end of the word (if
+forward) or at the first character of the word (if backward). A
+word is a sequence of word characters matching \[[:word:]] 
+(recognized by `forward-word') or an empty line matching ^$."
   (evil-forward-nearest
    count
    #'(lambda (&optional cnt)
@@ -1553,8 +1551,6 @@ an empty line matching ^$."
              (pnt (point)))
          (forward-word cnt)
          (if (= pnt (point)) cnt 0)))
-   #'(lambda (&optional cnt)
-       (evil-forward-chars "^[:word:]\n\r\t\f " cnt))
    #'forward-evil-empty-line))
 
 (defun forward-evil-WORD (&optional count)
@@ -1705,20 +1701,6 @@ The motion is repeated COUNT times."
 The motion is repeated COUNT times. This is the same as calling
 `evil-backward-end' with -COUNT."
   (evil-forward-end thing (- (or count 1))))
-
-(defun evil-forward-word (&optional count)
-  "Move by words.
-Moves point COUNT words forward or (- COUNT) words backward if
-COUNT is negative. This function is the same as `forward-word'
-but returns the number of words by which point could *not* be
-moved."
-  (setq count (or count 1))
-  (let* ((dir (if (>= count 0) +1 -1))
-         (count (abs count)))
-    (while (and (> count 0)
-                (forward-word dir))
-      (setq count (1- count)))
-    count))
 
 (defun evil-in-comment-p (&optional pos)
   "Check if POS is within a comment according to current syntax.
