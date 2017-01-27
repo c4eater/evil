@@ -1476,6 +1476,67 @@ Avoids double expansion for line-based commands like \"V\" or \"D\"."
       (beg end type) (evil-expand-line-for-line-based-operators beg end type)
     (evil-yank beg end type register)))
 
+(evil-define-operator evil-erase (beg end type register yank-handler)
+  "Delete text from BEG to END with TYPE, without yanking."
+  (interactive "<R><x><y>")
+  (unless register
+    (let ((text (filter-buffer-substring beg end)))
+      (unless (string-match-p "\n" text)
+        ;; set the small delete register
+        (evil-set-register ?- text))))
+  (cond
+   ((eq type 'block)
+    (evil-apply-on-block #'delete-region beg end nil))
+   ((and (eq type 'line)
+         (= end (point-max))
+         (or (= beg end)
+             (/= (char-before end) ?\n))
+         (/= beg (point-min))
+         (=  (char-before beg) ?\n))
+    (delete-region (1- beg) end))
+   (t
+    (delete-region beg end)))
+  ;; place cursor on beginning of line
+  (when (and (called-interactively-p)
+             (eq type 'line))
+    (evil-first-non-blank)))
+
+(evil-define-operator evil-erase-line (beg end type register yank-handler)
+  "Delete to end of line, without yanking."
+  :motion nil
+  :keep-visual t
+  (interactive "<R><x>")
+  ;; act linewise in Visual state
+  (let* ((beg (or beg (point)))
+         (end (or end beg)))
+    (when (evil-visual-state-p)
+      (unless (memq type '(line block))
+        (let ((range (evil-expand beg end 'line)))
+          (setq beg (evil-range-beginning range)
+                end (evil-range-end range)
+                type (evil-type range))))
+      (evil-exit-visual-state))
+    (cond
+     ((eq type 'block)
+      ;; equivalent to $d, i.e., we use the block-to-eol selection and
+      ;; call `evil-erase'. In this case we fake the call to
+      ;; `evil-end-of-line' by setting `temporary-goal-column' and
+      ;; `last-command' appropriately as `evil-end-of-line' would do.
+      (let ((temporary-goal-column most-positive-fixnum)
+            (last-command 'next-line))
+        (evil-erase beg end 'block register yank-handler)))
+     ((eq type 'line)
+      (evil-erase beg end type register yank-handler))
+     (t
+      (evil-erase beg (line-end-position) type register yank-handler)))))
+
+(evil-define-operator evil-erase-whole-line
+  (beg end type register yank-handler)
+  "Delete whole line, without yanking."
+  :motion evil-line
+  (interactive "<R><x>")
+  (evil-erase beg end type register yank-handler))
+
 (evil-define-operator evil-delete (beg end type register yank-handler)
   "Delete text from BEG to END with TYPE.
 Save in REGISTER or in the kill-ring with YANK-HANDLER."
@@ -1557,13 +1618,13 @@ Save in REGISTER or in the kill-ring with YANK-HANDLER."
   "Delete next character."
   :motion evil-forward-char
   (interactive "<R><x>")
-  (evil-delete beg end type register))
+  (evil-erase beg end type register))
 
 (evil-define-operator evil-delete-backward-char (beg end type register)
   "Delete previous character."
   :motion evil-backward-char
   (interactive "<R><x>")
-  (evil-delete beg end type register))
+  (evil-erase beg end type register))
 
 (evil-define-command evil-delete-backward-char-and-join (_count)
   "Delete previous character and join lines.
@@ -1669,7 +1730,7 @@ If TYPE is `line', insertion starts on an empty line.
 If TYPE is `block', the inserted text in inserted at each line
 of the block."
   (interactive "<R><x><y>")
-  (let ((delete-func (or delete-func #'evil-delete))
+  (let ((delete-func (or delete-func #'evil-erase))
         (nlines (1+ (evil-count-lines beg end)))
         opoint leftmost-point)
     (save-excursion
@@ -1700,15 +1761,14 @@ of the block."
       (cl-destructuring-bind
           (beg end _type) (evil-expand-line-for-line-based-operators beg end type)
         (evil-change-whole-line beg end register yank-handler))
-    (evil-change beg end type register yank-handler #'evil-delete-line)))
+    (evil-change beg end type register yank-handler #'evil-erase-line)))
 
 (evil-define-operator evil-change-whole-line
   (beg end register yank-handler)
   "Change whole line."
   :motion evil-line-or-visual-line
-  :type line
-  (interactive "<r><x>")
-  (evil-change beg end 'line register yank-handler))
+  (interactive "<R><x>")
+  (evil-change beg end type register yank-handler #'evil-erase-whole-line))
 
 (evil-define-command evil-copy (beg end address)
   "Copy lines in BEG END below line given by ADDRESS."
