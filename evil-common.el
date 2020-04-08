@@ -1696,11 +1696,39 @@ The motion is repeated COUNT times."
           (backward-char)))
       rest)))
 
+(defun evil-forward-past-end (thing &optional count)
+  "Move forward past the end of THING.
+The motion is repeated COUNT times."
+  (setq count (or count 1))
+  (cond
+   ((> count 0)
+    (unless (eobp) (forward-char))
+    (prog1 (forward-thing thing count)
+      (unless (bobp) (forward-char -1))
+      (forward-char)))
+   (t
+    (let ((bnd (bounds-of-thing-at-point thing))
+          rest)
+      (when (and bnd (<= (point) (cdr bnd) ))
+        (goto-char (car bnd)))
+      (forward-char -1)
+      (condition-case nil
+          (when (zerop (setq rest (forward-thing thing count)))
+            (end-of-thing thing))
+        (error))
+      rest))))
+
 (defun evil-backward-end (thing &optional count)
   "Move backward to end of THING.
 The motion is repeated COUNT times. This is the same as calling
-`evil-backward-end' with -COUNT."
+`evil-forward-end' with -COUNT."
   (evil-forward-end thing (- (or count 1))))
+
+(defun evil-backward-past-end (thing &optional count)
+  "Move backward past the end of THING.
+The motion is repeated COUNT times. This is the same as calling
+`evil-backward-past-end' with -COUNT."
+  (evil-forward-past-end thing (- (or count 1))))
 
 (defun evil-in-comment-p (&optional pos)
   "Check if POS is within a comment according to current syntax.

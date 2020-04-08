@@ -338,6 +338,24 @@ If BIGWORD is non-nil, move by WORDS."
                  (looking-at "[[:word:]]"))
       (evil-forward-end thing count))))
 
+(evil-define-motion evil-forward-word-past-end (count &optional bigword)
+  "Move the cursor past the end of the COUNT-th next word.
+If BIGWORD is non-nil, move by WORDS."
+  :type inclusive
+  (let ((thing (if bigword 'evil-WORD 'evil-word))
+        (count (or count 1)))
+    (evil-signal-at-bob-or-eob count)
+    ;; Evil special behaviour: e or E on a one-character word in
+    ;; operator state does not move point
+    (unless (and (evil-operator-state-p)
+                 (= 1 count)
+                 (let ((bnd (bounds-of-thing-at-point thing)))
+                   (and bnd
+                        (= (car bnd) (point))
+                        (= (cdr bnd) (1+ (point)))))
+                 (looking-at "[[:word:]]"))
+      (evil-forward-past-end thing count))))
+
 (evil-define-motion evil-backward-word-begin (count &optional bigword)
   "Move the cursor to the beginning of the COUNT-th previous word.
 If BIGWORD is non-nil, move by WORDS."
@@ -354,6 +372,15 @@ If BIGWORD is non-nil, move by WORDS."
     (evil-signal-at-bob-or-eob (- (or count 1)))
     (evil-backward-end thing count)))
 
+(evil-define-motion evil-backward-word-past-end (count &optional bigword)
+  "Move the cursor past the end of the COUNT-th previous word.
+If BIGWORD is non-nil, move by WORDS."
+  :type inclusive
+  (let ((thing (if bigword 'evil-WORD 'evil-word)))
+    (evil-signal-at-bob-or-eob (- (or count 1)))
+    (evil-backward-past-end thing count))) ;
+
+
 (evil-define-motion evil-forward-WORD-begin (count)
   "Move the cursor to the beginning of the COUNT-th next WORD."
   :type exclusive
@@ -364,6 +391,11 @@ If BIGWORD is non-nil, move by WORDS."
   :type inclusive
   (evil-forward-word-end count t))
 
+(evil-define-motion evil-forward-WORD-past-end (count)
+  "Move the cursor past the end of the COUNT-th next WORD."
+  :type inclusive
+  (evil-forward-word-past-end count t))
+
 (evil-define-motion evil-backward-WORD-begin (count)
   "Move the cursor to the beginning of the COUNT-th previous WORD."
   :type exclusive
@@ -373,6 +405,11 @@ If BIGWORD is non-nil, move by WORDS."
   "Move the cursor to the end of the COUNT-th previous WORD."
   :type inclusive
   (evil-backward-word-end count t))
+
+(evil-define-motion evil-backward-WORD-past-end (count)
+  "Move the cursor past the end of the COUNT-th previous WORD."
+  :type inclusive
+  (evil-backward-word-past-end count t))
 
 ;; section movement
 (evil-define-motion evil-forward-section-begin (count)
