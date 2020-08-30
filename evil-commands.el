@@ -2254,7 +2254,7 @@ The return value is the yanked text."
               (evil-set-marker ?\[ beg)
               (evil-set-marker ?\] (1- (point)))
               (when (evil-normal-state-p)
-                (evil-move-cursor-back)))))
+                (evil-move-cursor-back t)))))
         (when register
           (setq evil-last-paste nil))
         (and (> (length text) 0) text)))))
