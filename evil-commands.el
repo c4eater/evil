@@ -2426,7 +2426,7 @@ The return value is the yanked text."
               (evil-set-marker ?\[ beg)
               (evil-set-marker ?\] (1- (point)))
               (when (evil-normal-state-p)
-                (evil-move-cursor-back)))))
+                (evil-move-cursor-back t)))))
         (when evil--cursor-after
           (if (eq 'evil-yank-line-handler yank-handler)
               (ignore-errors (evil-next-line-first-non-blank 1))
