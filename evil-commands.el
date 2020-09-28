@@ -1574,6 +1574,13 @@ Avoids double expansion for line-based commands like \"V\" or \"D\"."
   (interactive "<R><x>")
   (evil-erase beg end type register yank-handler))
 
+(evil-define-operator evil-yank-whole-line
+  (beg end type register yank-handler)
+  "Yank whole line."
+  :motion evil-line
+  (interactive "<R><x>")
+  (evil-yank beg end type register yank-handler))
+
 (evil-define-operator evil-delete (beg end type register yank-handler)
   "Delete text from BEG to END with TYPE.
 Save in REGISTER or in the kill-ring with YANK-HANDLER."
