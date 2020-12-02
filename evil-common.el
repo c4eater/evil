@@ -2520,6 +2520,10 @@ Supplied as the `undo' element of a yank handler."
       (unless (eobp) (forward-line)))
     (goto-char opoint)))
 
+(defvar evil-paste-operators
+  '(evil-paste-after evil-paste-before evil-visual-paste)
+  "List of operators recognized by `evil-paste-pop' as paste operators.")
+
 ;; TODO: if undoing is disabled in the current buffer, paste-pop won't
 ;; work. Although this is probably not a big problem, because usually
 ;; buffers where `evil-paste-pop' may be useful have undoing enabled.
@@ -2537,10 +2541,7 @@ used after `evil-paste-after' the new text is also yanked using
 The COUNT argument inserts the COUNTth previous kill.  If COUNT
 is negative this is a more recent kill."
   (interactive "p")
-  (unless (memq last-command
-                '(evil-paste-after
-                  evil-paste-before
-                  evil-visual-paste))
+  (unless (memq last-command evil-paste-operators)
     (user-error "Previous command was not an evil-paste: %s" last-command))
   (unless evil-last-paste
     (user-error "Previous paste command used a register"))
