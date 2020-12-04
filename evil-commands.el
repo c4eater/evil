@@ -1505,8 +1505,8 @@ Avoids double expansion for line-based commands like \"V\" or \"D\"."
   (list beg end type))
 
 (evil-define-operator evil-yank-line (beg end type register)
-  "Save whole lines into the kill-ring."
-  :motion evil-line-or-visual-line
+  "Yank to end of line."
+  :motion nil
   :move-point nil
   (interactive "<R><x>")
   (cl-destructuring-bind
