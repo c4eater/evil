@@ -1492,22 +1492,39 @@ or line COUNT to the top of the window."
       (evil-yank-characters beg end register yank-handler)))))
 
 (evil-define-operator evil-yank-line (beg end type register)
-  "Saves whole lines into the kill-ring."
-  :motion evil-line-or-visual-line
+  "Yank to end of line."
+  :motion nil
   :move-point nil
   (interactive "<R><x>")
-  (when (evil-visual-state-p)
-    (unless (memq type '(line block screen-line))
-      (let ((range (evil-expand beg end
-                                (if (and evil-respect-visual-line-mode
-                                         visual-line-mode)
-                                    'screen-line
-                                  'line))))
-        (setq beg (evil-range-beginning range)
-              end (evil-range-end range)
-              type (evil-type range))))
-    (evil-exit-visual-state))
-  (evil-yank beg end type register))
+  ;; act linewise in Visual state
+  (let* ((beg (or beg (point)))
+         (end (or end beg))
+         (visual-line-mode (and evil-respect-visual-line-mode
+                                visual-line-mode))
+         (line-end (if visual-line-mode
+                       (save-excursion
+                         (end-of-visual-line)
+                         (point))
+                     (line-end-position))))
+    (when (evil-visual-state-p)
+      (unless (memq type '(line screen-line block))
+        (let ((range (evil-expand beg end
+                                  (if visual-line-mode
+                                      'screen-line
+                                    'line))))
+          (setq beg (evil-range-beginning range)
+                end (evil-range-end range)
+                type (evil-type range))))
+      (evil-exit-visual-state))
+    (cond
+     ((eq type 'block)
+      (let ((temporary-goal-column most-positive-fixnum)
+            (last-command 'next-line))
+        (evil-yank beg end 'block register yank-handler)))
+     ((memq type '(line screen-line))
+      (evil-yank beg end type register))
+     (t
+      (evil-yank beg line-end type register)))))
 
 (evil-define-operator evil-erase (beg end type register yank-handler)
   "Delete text from BEG to END with TYPE, without yanking."
