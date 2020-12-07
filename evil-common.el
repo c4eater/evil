@@ -1702,10 +1702,7 @@ The motion is repeated COUNT times."
   (setq count (or count 1))
   (cond
    ((> count 0)
-    (unless (eobp) (forward-char))
-    (prog1 (forward-thing thing count)
-      (unless (bobp) (forward-char -1))
-      (forward-char)))
+    (forward-thing thing count))
    (t
     (let ((bnd (bounds-of-thing-at-point thing))
           rest)
