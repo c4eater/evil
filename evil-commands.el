@@ -424,8 +424,10 @@ If BIGWORD is non-nil, move by WORDS."
   :jump t
   :type inclusive
   (evil-signal-at-bob-or-eob count)
+  (evil-next-line)      ; hack for repeating the motion
   (evil-forward-end 'evil-defun count)
-  (unless (eobp) (forward-line)))
+  (unless (eobp) (forward-line))
+  (evil-previous-line)) ; hack continuation; compensate next-line above
 
 (evil-define-motion evil-backward-section-begin (count)
   "Move the cursor to the beginning of the COUNT-th previous section."
