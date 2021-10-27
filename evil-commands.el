@@ -1573,6 +1573,7 @@ Avoids double expansion for line-based commands like \"V\" or \"D\"."
   (beg end type register yank-handler)
   "Delete whole line, without yanking."
   :motion evil-line
+  :move-point nil
   (interactive "<R><x>")
   (evil-erase beg end type register yank-handler))
 
@@ -1580,6 +1581,7 @@ Avoids double expansion for line-based commands like \"V\" or \"D\"."
   (beg end type register yank-handler)
   "Yank whole line."
   :motion evil-line
+  :move-point nil
   (interactive "<R><x>")
   (evil-yank beg end type register yank-handler))
 
@@ -1810,7 +1812,7 @@ of the block."
     (evil-change beg end type register yank-handler #'evil-erase-line)))
 
 (evil-define-operator evil-change-whole-line
-  (beg end register yank-handler)
+  (beg end type register yank-handler)
   "Change whole line."
   :motion evil-line-or-visual-line
   (interactive "<R><x>")
