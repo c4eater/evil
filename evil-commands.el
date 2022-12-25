@@ -1480,8 +1480,7 @@ the left edge."
      ((memq type '(line screen-line))
       (evil-yank-lines beg end register yank-handler))
      (t
-      (evil-yank-characters beg end register yank-handler)
-      (goto-char beg)))))
+      (evil-yank-characters beg end register yank-handler)))))
 
 (defun evil-expand-line-for-line-based-operators (beg end type)
   "Expand to line when in visual mode possibly changing BEG, END and TYPE.

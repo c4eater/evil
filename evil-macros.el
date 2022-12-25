@@ -505,7 +505,7 @@ Optional keyword arguments are:
     `(evil-define-command ,operator ,args
        ,@(when doc `(,doc))
        ,@keys
-       :keep-visual t
+       :keep-visual ,visual
        :suppress-operator t
        (interactive
         (let* ((props (evil-command-properties ',operator))
